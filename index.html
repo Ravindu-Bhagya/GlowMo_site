@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GlowMo Shop - Cosmetics</title>
+  <style>
+    :root{
+      --accent:#005DB7;      /* Cetaphil Blue (official) */
+      --accent2:#8BC34A;     /* Cetaphil Green (official) */
+      --bg:#E6F4FF;          /* Light Cetaphil Blue */
+      --card:#FFFFFF;
+      --text:#0A1A2A;
+    }
+    [data-theme="dark"]{
+      --bg:#0f1720;
+      --card:#0b1620;
+      --text:#e6eef6;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+    header{background:var(--card);padding:12px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);display:flex;align-items:center;gap:12px}
+    .brand{font-weight:700;color:var(--accent);font-size:20px}
+    .container{max-width:980px;margin:18px auto;padding:0 12px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+    h2{margin:0 0 8px;color:var(--accent)}
+    .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .product{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.04)}
+    .prod-img{width:100%;height:160px;border-radius:8px;background:#e8f5ff;display:flex;align-items:center;justify-content:center;color:#888}
+    .prod-title{font-weight:600}
+    .prod-desc{font-size:13px;color:var(--text)}
+    .row{display:flex;gap:8px;align-items:center}
+    button{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;transition:all .12s}
+    button:hover{transform:translateY(-1px)}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+    input,textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid #d0dce6;background:transparent;color:var(--text)}
+    .small{font-size:13px;color:var(--text)}
+    .cart-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed rgba(0,0,0,0.05)}
+    .cart-item img{width:56px;height:56px;border-radius:6px;object-fit:cover}
+    footer{text-align:center;padding:18px;color:#777;margin-top:20px}
+    #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:12px 22px;border-radius:8px;font-size:14px;display:none;z-index:999;box-shadow:0 4px 10px rgba(0,0,0,0.15)}
+    
+    .nav-btn{background:var(--card);border-radius:10px;padding:8px 12px;border:1px solid rgba(0,0,0,0.06)}
+    .whats-float{position:fixed;right:18px;bottom:110px;background:var(--accent2);color:#fff;padding:12px;border-radius:50%;box-shadow:0 6px 18px rgba(0,0,0,0.15);z-index:999}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .topbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+    .search{flex:1}
+    @media(max-width:880px){.grid{grid-template-columns:1fr}.bottom-nav{max-width:100%}}
+  </style>
+</head>
+<body data-theme="">
+<header>
+  <div class="brand">GlowMo</div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <label style="font-size:13px;color:var(--text)">Dark</label>
+    <input id="darkToggle" type="checkbox" />
+    <button id="adminBtn" class="nav-btn" style="margin-left:8px">Admin</button>
+  </div>
+</header>
+
+<div style="background:var(--bg);padding:12px 0">
+  <div class="container">
+    <div class="topbar">
+      <input id="search" class="search" placeholder="Search products..." />
+      <select id="categoryFilter"><option value="all">All categories</option></select>
+      <select id="priceSort"><option value="none">Sort</option><option value="asc">Price ↑</option><option value="desc">Price ↓</option></select>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>Products</h2>
+          <div id="products" class="products"></div>
+        </div>
+
+        <div class="card adminOnly" style="display:none;margin-top:12px">
+          <h2>Add Product</h2>
+          <label>Name</label>
+          <input id="p_name" />
+          <label style="margin-top:8px">Category</label>
+          <input id="p_cat" placeholder="e.g. Face, Body, Serum" />
+          <label style="margin-top:8px">Price (LKR)</label>
+          <input id="p_price" />
+          <label style="margin-top:8px">Stock</label>
+          <input id="p_stock" type="number" min="0" />
+          <label style="margin-top:8px">Image</label>
+          <input id="p_image" type="file" accept="image/*" />
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button id="addProd">Add Product</button>
+            <button class="ghost" id="resetProd">Reset</button>
+          </div>
+        </div>
+
+        <div class="card adminOnly" style="display:none;margin-top:12px">
+          <h2>Backup & Restore</h2>
+          <div style="font-size:13px;margin-bottom:10px;color>#666">Export/import all products and data</div>
+          <div style="display:flex;gap:8px">
+            <button id="exportData" style="flex:1">Export Data</button>
+            <button class="ghost" id="importData" style="flex:1">Import Data</button>
+          </div>
+          <input id="importFile" type="file" accept=".json" style="display:none" />
+        </div>
+      </div>
+
+      <aside>
+        <div class="card">
+          <h2>Cart</h2>
+          <div id="cartList"><div class="small">Your cart is empty</div></div>
+          <div class="small" style="margin-top:10px">Total items: <span id="totalCount">0</span></div>
+          <div id="totalPrice" style="margin-top:6px;font-weight:700">LKR 0</div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h2>Checkout</h2>
+          <label>Name</label>
+          <input id="cust_name">
+          <label style="margin-top:6px">Phone</label>
+          <input id="cust_phone">
+          <label style="margin-top:6px">Address</label>
+          <textarea id="cust_addr" rows="2"></textarea>
+          <label style="margin-top:6px">Notes</label>
+          <textarea id="cust_notes" rows="2"></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button id="placeOrder">Send Order (WhatsApp)</button>
+            <button class="ghost" id="clearCart">Clear Cart</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<div id="toast">Order sent successfully!</div>
+<button class="whats-float" id="waQuick">Wa</button>
+
+
+  
+  
+  
+</div>
+
+<footer>Contact Us through WhatsApp: 076 245 2619</footer>
+
+<script>
+const SELLER_WA = '94762452619';
+let isAdmin=false;
+
+function updateAdminUI(){
+  document.querySelectorAll('.adminOnly').forEach(e=> e.style.display = isAdmin ? 'block' : 'none');
+  const btn = document.getElementById('adminBtn');
+  if(btn) btn.textContent = isAdmin ? 'Logout' : 'Admin';
+}
+
+function adminLogin(){
+  const pass = prompt('Enter admin password:');
+  if(pass===null) return; // cancelled
+  if(pass==='RAvindu@97'){
+    isAdmin=true;
+    updateAdminUI();
+    alert('Admin enabled');
+  } else {
+    alert('Wrong password');
+  }
+}
+
+function adminLogout(){
+  if(confirm('Logout admin?')){ isAdmin=false; updateAdminUI(); alert('Admin disabled'); }
+}
+
+function handleAdminClick(){ if(isAdmin) adminLogout(); else adminLogin(); }
+
+// bind admin button (script at page end, element exists)
+const _adminBtn = document.getElementById('adminBtn'); if(_adminBtn) _adminBtn.onclick = handleAdminClick; updateAdminUI();
+
+function genId(){return 'p_'+Math.random().toString(36).slice(2,9)}
+
+let products = [
+  {id:genId(),name:'Glow Serum 50ml',cat:'Face',price:2500,stock:10,img:null},
+  {id:genId(),name:'Silk Body Cream 200g',cat:'Body',price:3200,stock:5,img:null},
+  {id:genId(),name:'Velvet Night Cream',cat:'Face',price:2800,stock:0,img:null},
+];
+
+if(localStorage.getItem('products')){ try{ products = JSON.parse(localStorage.getItem('products')); }catch(e){} }
+
+let cart = {};
+
+function escapeHtml(s){return s?s.replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+function $(id){return document.getElementById(id)}
+
+function populateCategories(){
+  const set = new Set(['all']); products.forEach(p=> set.add(p.cat||'Uncategorized'));
+  const sel = $('categoryFilter'); sel.innerHTML=''; set.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+}
+
+function renderProducts(){
+  populateCategories();
+  const q = $('search').value.trim().toLowerCase();
+  const cat = $('categoryFilter').value;
+  const sort = $('priceSort').value;
+
+  let list = products.slice();
+  if(cat && cat!=='all') list = list.filter(p=> (p.cat||'').toLowerCase()===cat.toLowerCase());
+  if(q) list = list.filter(p=> (p.name).toLowerCase().includes(q));
+  if(sort==='asc') list.sort((a,b)=>a.price-b.price);
+  if(sort==='desc') list.sort((a,b)=>b.price-a.price);
+
+  const wrap = $('products'); wrap.innerHTML='';
+  list.forEach(p=>{
+    const d=document.createElement('div'); d.className='product card';
+    const out = p.stock<=0 ? '<div style="color:#c00;font-weight:700">Out of stock</div>':'';
+    d.innerHTML = `
+      <div class="prod-img">${p.img?`<img src="${p.img}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`:'No Image'}</div>
+      <div class="prod-title">${escapeHtml(p.name)} ${out}</div>
+      <div class="prod-desc">LKR ${p.price}</div>
+      <div style="margin-top:6px" class="row">
+        <label class="small">Qty</label>
+        <select class="qtySel" data-id="${p.id}">${[1,2,3,4,5].map(n=>`<option>${n}</option>`).join('')}</select>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="addBtn" data-id="${p.id}" ${p.stock<=0?'disabled':''}>Add to cart</button>
+        <button class="ghost adminOnly" data-id="${p.id}" style="display:${isAdmin?'inline-block':'none'}">Remove</button>
+        <button class="ghost adminOnly" data-id="${p.id}" style="display:${isAdmin?'inline-block':'none'}">Edit</button>
+      </div>
+    `;
+    wrap.appendChild(d);
+  });
+  attachProductEvents();
+}
+
+function attachProductEvents(){
+  document.querySelectorAll('.addBtn').forEach(b=> b.onclick = ()=>{
+    const id=b.dataset.id; const qty = Number(b.closest('.product').querySelector('.qtySel').value);
+    const p = products.find(x=>x.id===id); if(!p) return; if(p.stock<qty){ alert('Not enough stock'); return; }
+    if(!cart[id]) cart[id] = {...p, qty}; else cart[id].qty += qty;
+    p.stock -= qty; saveProducts(); renderCart(); renderProducts();
+  });
+  document.querySelectorAll('.adminOnly.ghost').forEach(b=> b.onclick = ()=>{
+    const id=b.dataset.id; products = products.filter(x=>x.id!==id); saveProducts(); renderProducts();
+  });
+}
+
+function renderCart(){
+  const wrap = $('cartList'); wrap.innerHTML=''; const keys = Object.keys(cart);
+  if(keys.length===0){ wrap.innerHTML='<div class="small">Your cart is empty</div>'; $('totalCount').innerText='0'; $('totalPrice').innerText='LKR 0'; return; }
+  let totalQ=0, totalP=0;
+  keys.forEach(id=>{ const it = cart[id]; totalQ += it.qty; totalP += Number(it.price)*it.qty;
+    const div=document.createElement('div'); div.className='cart-item';
+    div.innerHTML = `<img src='${it.img||''}' onerror="this.style.display='none'" /><div style='flex:1'><div><b>${escapeHtml(it.name)}</b></div><div class='row' style='margin-top:6px'><button class='dec' data-id='${id}'>-</button><div style='min-width:28px;text-align:center'>${it.qty}</div><button class='inc' data-id='${id}'>+</button></div></div><button class='ghost removeItem' data-id='${id}'>Remove</button>`;
+    wrap.appendChild(div);
+  });
+  $('totalCount').innerText=String(totalQ); $('totalPrice').innerText='LKR '+totalP; attachCartEvents();
+}
+
+function attachCartEvents(){
+  document.querySelectorAll('.inc').forEach(b=> b.onclick = ()=>{ const id=b.dataset.id; const p = products.find(x=>x.id===id); if(p.stock<=0){ alert('No more stock'); return;} cart[id].qty++; p.stock--; saveProducts(); renderCart(); renderProducts(); });
+  document.querySelectorAll('.dec').forEach(b=> b.onclick = ()=>{ const id=b.dataset.id; if(cart[id].qty>1){ cart[id].qty--; const p = products.find(x=>x.id===id); p.stock++; saveProducts(); renderCart(); renderProducts(); } });
+  document.querySelectorAll('.removeItem').forEach(b=> b.onclick = ()=>{ const id=b.dataset.id; const p = products.find(x=>x.id===id); p.stock += cart[id].qty; delete cart[id]; saveProducts(); renderCart(); renderProducts(); });
+}
+
+/* Image compression before saving */
+$('p_image').onchange = async e=>{
+  const f = e.target.files[0]; if(!f) return; const img = await fileToCompressedDataUrl(f, 800, 0.7); window._pickedImage = img;
+}
+
+function fileToCompressedDataUrl(file, maxWidth=800, quality=0.7){
+  return new Promise((resolve)=>{
+    const reader = new FileReader(); reader.onload = function(ev){
+      const img = new Image(); img.onload = function(){
+        const canvas = document.createElement('canvas');
+        const ratio = img.width / img.height; let w = img.width; let h = img.height;
+        if(w>maxWidth){ w = maxWidth; h = Math.round(w / ratio); }
+        canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality); resolve(dataUrl);
+      }; img.src = ev.target.result;
+    }; reader.readAsDataURL(file);
+  });
+}
+
+$('addProd').onclick = ()=>{
+  const name = $('p_name').value.trim(); const price = Number($('p_price').value); const cat = $('p_cat').value.trim()||'Uncategorized'; const stock = Number($('p_stock').value)||0;
+  if(!name || !price){ alert('Name and price required'); return; }
+  const img = window._pickedImage || null;
+  products.unshift({id:genId(),name,cat,price,stock,img}); saveProducts(); renderProducts(); $('p_name').value=''; $('p_price').value=''; $('p_cat').value=''; $('p_stock').value=''; $('p_image').value=''; window._pickedImage=null;
+}
+
+$('resetProd').onclick = ()=>{ $('p_name').value=''; $('p_price').value=''; $('p_cat').value=''; $('p_stock').value=''; $('p_image').value=''; window._pickedImage=null; }
+
+function exportData(){
+  const data = { products, cart, timestamp: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `glowmo-backup-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  alert('Data exported successfully');
+}
+
+function importData(){
+  $('importFile').click();
+}
+
+$('importFile').onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!data.products || !Array.isArray(data.products)) throw new Error('Invalid format');
+      if(confirm('Replace all data with imported backup?')){
+        products = data.products;
+        cart = data.cart || {};
+        saveProducts();
+        renderProducts();
+        renderCart();
+        alert('Data imported successfully');
+      }
+    }catch(err){
+      alert('Error importing data: ' + err.message);
+    }
+  };
+  reader.readAsText(f);
+  $('importFile').value = '';
+}
+
+$('exportData').onclick = exportData;
+$('importData').onclick = importData;
+
+function saveProducts(){ localStorage.setItem('products', JSON.stringify(products)); }
+
+/* Search, filter, sort events */
+$('search').oninput = ()=> renderProducts();
+$('categoryFilter').onchange = ()=> renderProducts();
+$('priceSort').onchange = ()=> renderProducts();
+
+/* Floating WhatsApp quick button */
+$('waQuick').onclick = ()=>{ window.open(`https://wa.me/${SELLER_WA}`, '_blank'); }
+
+/* Place order -> open whatsapp, reset fields, clear cart, toast */
+$('placeOrder').onclick = ()=>{
+  if(Object.keys(cart).length===0){ alert('Cart empty'); return; }
+  const name = $('cust_name').value.trim(); const phone = $('cust_phone').value.trim(); const addr = $('cust_addr').value.trim(); const notes = $('cust_notes').value.trim();
+  let msg = `*New Order*%0AName: ${encodeURIComponent(name)}%0APhone: ${encodeURIComponent(phone)}%0AAddress: ${encodeURIComponent(addr)}%0A%0A*Items:*%0A`;
+  Object.values(cart).forEach(i=>{ msg += `- ${encodeURIComponent(i.name)} (x${i.qty})%0A`; });
+  if(notes) msg += `%0ANotes: ${encodeURIComponent(notes)}`;
+  window.open(`https://wa.me/${SELLER_WA}?text=${msg}`,'_blank');
+  // reset
+  $('cust_name').value=''; $('cust_phone').value=''; $('cust_addr').value=''; $('cust_notes').value=''; cart={}; saveProducts(); renderCart(); renderProducts();
+  // toast
+  const t=$('toast'); t.style.display='block'; setTimeout(()=>t.style.display='none',2200);
+}
+
+$('clearCart').onclick = ()=>{ if(confirm('Clear cart?')){ Object.values(cart).forEach(i=>{ const p=products.find(x=>x.id===i.id); if(p) p.stock += i.qty; }); cart={}; saveProducts(); renderCart(); renderProducts(); }}
+
+/* Dark mode toggle */
+$('darkToggle').onchange = e=>{ document.body.setAttribute('data-theme', e.target.checked? 'dark':'' ); }
+
+/* Init */
+renderProducts(); renderCart(); populateCategories();
+</script>
+</body>
+</html>
