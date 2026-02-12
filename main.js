@@ -31,9 +31,9 @@ updateAdminUI();
 function genId() { return 'p_' + Math.random().toString(36).slice(2, 9); }
 
 let products = [
-  { id: genId(), name: 'APLB Glutathione Niacinamide Ampoule Serum', cat: 'Face', price: 8500, stock: 10, img: 'images/aplb_glutathione_serum.jpeg' },
-  { id: genId(), name: 'Cetaphil Gentle Skin Cleanser For All Skin Types', cat: 'Body', price: 9900, stock: 5, img: 'images/cetaphil_gentle_cleanser.jpeg' },
-  { id: genId(), name: 'Dr.G Black Snail Cream', cat: 'Face', price: 10500, stock: 5, img: 'images/drg_black_snail_cream.jpeg' },
+  { id: genId(), name: 'APLB Glutathione Niacinamide Ampoule Serum', cat: 'Face', price: 5200, stock: 10, img: 'images/aplb_glutathione_serum.jpeg' },
+  { id: genId(), name: 'Cetaphil Gentle Skin Cleanser For All Skin Types', cat: 'Body', price: 4800, stock: 5, img: 'images/cetaphil_gentle_cleanser.jpeg' },
+  { id: genId(), name: 'Dr.G Black Snail Cream', cat: 'Face', price: 4650, stock: 5, img: 'images/drg_black_snail_cream.jpeg' },
   { id: genId(), name: 'Glutathione + Niacinamide Sheet Mask', cat: 'Face', price: 1390, stock: 8, img: 'images/glutathione_niacinamide_mask.jpeg' }
 ];
 
